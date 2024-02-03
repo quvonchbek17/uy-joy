@@ -7,6 +7,8 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class ResidenceService {
+  public readonly selected: string[]
+
   constructor(
     @InjectRepository(Residence)
     private readonly residenceRepo: Repository<Residence>,
@@ -14,17 +16,21 @@ export class ResidenceService {
     private readonly categoryRepo: Repository<Category>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-  ) {}
+  ) {
+     this.selected = ['r.id', 'r.description', 'r.created_at', 'r.updated_at', 'u.id', 'u.phone', 'u.name', 'u.surname', "c.id", "c.name", "c.img"]
+  }
 
   async create(body: CreateResidenceDto, userId: string) {
     try {
+
       let user = await this.userRepo.findOne({where: {id: userId}})
       let resCategories = await Promise.all(
-        body.categories.map(async (el) => await this.categoryRepo.findOne({ where: { id: el } }))
+        body?.categories.map(async (el) => await this.categoryRepo.findOne({ where: { id: el } }))
       );
 
       delete body.categories
       let residence = this.residenceRepo.create({...body, categories:resCategories});
+
       residence.user = user
       await residence.save();
       delete residence.user.password
@@ -39,17 +45,39 @@ export class ResidenceService {
   }
 
   async findAll() {
-    let residences = await this.residenceRepo.find({relations:{ categories:true, user: true }})
-    residences = residences.map(el => {
-      delete el?.user?.password;
-      delete el?.user?.created_at
-      delete el?.user?.updated_at
-      return el
-    })
+    let residences = await this.residenceRepo
+    .createQueryBuilder('r')
+    .leftJoinAndSelect('r.user', 'u')
+    .leftJoinAndSelect('r.categories', 'c')
+    .select(this.selected)
+    .getMany();
     return {
       status: HttpStatus.OK,
       data: residences
     };
+  }
+
+  async pagination(page: number, limit: number){
+    let [residences, count] = await this.residenceRepo
+     .createQueryBuilder("r")
+     .leftJoinAndSelect('r.user', 'u')
+     .leftJoinAndSelect('r.categories', 'c')
+     .select(this.selected)
+     .offset((page - 1) * limit)
+     .limit(limit)
+     .getManyAndCount()
+
+
+     return {
+      status: HttpStatus.OK,
+      currentPage: page,
+      currentCount: limit,
+      totalCount: count,
+      totalPages: Math.ceil(count/limit),
+      residences
+     }
+
+
   }
 
   findOne(id: number) {
@@ -63,4 +91,5 @@ export class ResidenceService {
   remove(id: number) {
     return `This action removes a #${id} residence`;
   }
+
 }

@@ -21,6 +21,7 @@ import { AuthService } from '../auth.service';
       }
       try {
         const userId = await this.authService.verify(token)
+        await this.authService.validateUser(userId)
         request['user'] = {id: userId};
       } catch (error){
         throw new InternalServerErrorException(error.message);
@@ -30,6 +31,7 @@ import { AuthService } from '../auth.service';
 
     private extractTokenFromHeader(request: Request): string | undefined {
       const [type, token] = request.headers.authorization?.split(' ') ?? [];
+
       return type === 'Bearer' ? token : undefined;
     }
   }
