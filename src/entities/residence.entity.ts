@@ -1,5 +1,5 @@
-import { Entity, Column, OneToOne, ManyToMany, JoinTable, ManyToOne, JoinColumn } from 'typeorm'
-import { BaseModel, Category, User }  from "@entities"
+import { Entity, Column, ManyToMany, JoinTable, ManyToOne, JoinColumn, OneToMany} from 'typeorm'
+import { BaseModel, Category, User, File }  from "@entities"
 
 @Entity("residences")
 export class Residence extends BaseModel {
@@ -16,4 +16,7 @@ export class Residence extends BaseModel {
     @ManyToMany(type => Category, category => category.residences)
     @JoinTable()
     categories: Category[]
+
+    @OneToMany(type => File, file => file.residence)
+    images: File[]
 }

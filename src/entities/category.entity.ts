@@ -1,5 +1,5 @@
 import { Entity, Column, OneToMany, OneToOne, ManyToMany, JoinColumn, JoinTable } from 'typeorm'
-import { BaseModel, Residence } from "@entities"
+import { BaseModel, Residence, CategoryProperty } from "@entities"
 
 @Entity("categories")
 export class Category extends BaseModel {
@@ -19,6 +19,9 @@ export class Category extends BaseModel {
     @ManyToMany(type => Residence, residence => residence.user)
     @JoinTable()
     residences: Residence[]
+
+    @OneToMany(type => CategoryProperty, field => field.category)
+    properties: CategoryProperty[]
 
 
 }

@@ -17,7 +17,7 @@ export class ResidenceService {
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
   ) {
-     this.selected = ['r.id', 'r.description', 'r.created_at', 'r.updated_at', 'u.id', 'u.phone', 'u.name', 'u.surname', "c.id", "c.name", "c.img"]
+     this.selected = ['r.id', 'r.description', 'r.created_at', 'r.updated_at', 'u.id', 'u.phone', 'u.name', 'u.surname', "c.id"]
   }
 
   async create(body: CreateResidenceDto, userId: string) {
@@ -74,10 +74,8 @@ export class ResidenceService {
       currentCount: limit,
       totalCount: count,
       totalPages: Math.ceil(count/limit),
-      residences
+      data: residences
      }
-
-
   }
 
   findOne(id: number) {
